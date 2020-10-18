@@ -1,0 +1,14 @@
+logging:
+  outputtofile: false
+pornolab:
+  idforum: "1780,1678,1110" #!comma divided 1843,1842
+  username: username@mail.com
+  password: 123456
+misc:
+  proxy: http://1.2.3.4:1234
+  timeoutseed: 72 # Hours
+siterip:
+  apibase: http://127.0.0.1:9000/v1/
+  username: test@gmail.com
+  password: 123456
+  linknumber: 1,2,3  #number of filehost in filehost.json
