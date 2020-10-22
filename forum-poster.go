@@ -195,7 +195,7 @@ func (c *Collector) fetch(r *Request) ([]byte, error) {
 		"writer":  r.Writer,
 		"URL":     r.URL,
 		"Method":  r.Method,
-	}).Debug("[Poster] - Value Request")
+	}).Debug("[Forum-Poster] - Value Request")
 
 	if r.Method != "GET" {
 		payload = r.Body
@@ -211,8 +211,8 @@ func (c *Collector) fetch(r *Request) ([]byte, error) {
 			"URL":     r.URL,
 			"Method":  r.Method,
 			"Error":   err,
-		}).Error("[Poster] - Make Request")
-		return nil, fmt.Errorf("[Poster] - Error in request: %s", err)
+		}).Error("[Forum-Poster] - Make Request")
+		return nil, fmt.Errorf("[Forum-Poster] - Error in request: %s", err)
 	}
 	//req.Header.Add("Cookie", c.Cookie)
 
@@ -231,8 +231,8 @@ func (c *Collector) fetch(r *Request) ([]byte, error) {
 			"URL":     r.URL,
 			"Method":  r.Method,
 			"Error":   err,
-		}).Error("[Poster] - Get Response")
-		return nil, fmt.Errorf("[Poster] - Error in response: %s", err)
+		}).Error("[Forum-Poster] - Get Response")
+		return nil, fmt.Errorf("[Forum-Poster] - Error in response: %s", err)
 	}
 
 	if res.StatusCode == 302 {
@@ -246,8 +246,8 @@ func (c *Collector) fetch(r *Request) ([]byte, error) {
 			"URL":        r.URL,
 			"Method":     r.Method,
 			"StatusCode": res.StatusCode,
-		}).Error("[Poster] - Get Response")
-		return nil, fmt.Errorf("[Poster] - Response not valid: %s", err)
+		}).Error("[Forum-Poster] - Get Response")
+		return nil, fmt.Errorf("[Forum-Poster] - Response not valid: %s", err)
 	}
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
@@ -260,7 +260,7 @@ func (c *Collector) fetch(r *Request) ([]byte, error) {
 
 	log.Debugln("Cookie from", r.URL, "are:", res.Cookies())
 
-	log.Traceln("[Poster] - HTML response: ", string(body))
+	log.Traceln("[Forum-Poster] - HTML response: ", string(body))
 
 	for _, cookie := range res.Cookies() {
 

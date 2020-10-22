@@ -50,7 +50,7 @@ func (c *Collector) PHPBB3(i PHPBB3InfoSite, p Payload) error {
 	err = writer.Close()
 	if err != nil {
 		fmt.Println(err)
-		return fmt.Errorf("[Poster] Login - %v", err)
+		return fmt.Errorf("[Forum-Poster] Login - %v", err)
 	}
 
 	postLogin := &Request{
@@ -83,7 +83,7 @@ func (c *Collector) PHPBB3Post(i PHPBB3InfoSite, p Payload, a string) error {
 		log.Infoln("* Reply thread to", i.URL)
 		url = fmt.Sprintf("%s/posting.php?mode=reply&f=%s&t=%s", i.URL, i.F, i.T)
 	default:
-		return fmt.Errorf("[Poster] - Choice are: new or reply. Set the right one")
+		return fmt.Errorf("[Forum-Poster] - Choice are: new or reply. Set the right one")
 	}
 
 	// Login first
@@ -127,19 +127,19 @@ func (c *Collector) PHPBB3Post(i PHPBB3InfoSite, p Payload, a string) error {
 	token, ok := doc.Find("input[name='form_token']").Attr("value")
 	if !ok {
 
-		return fmt.Errorf("[Poster] - Can't find form_token")
+		return fmt.Errorf("[Forum-Poster] - Can't find form_token")
 	}
 
 	creationTime, ok := doc.Find("input[name='creation_time']").Attr("value")
 	if !ok {
 
-		return fmt.Errorf("[Poster] - Can't find creation_time")
+		return fmt.Errorf("[Forum-Poster] - Can't find creation_time")
 	}
 
 	lastclick, ok := doc.Find("input[name='lastclick']").Attr("value")
 	if !ok {
 
-		return fmt.Errorf("[Poster] - Can't find lastclick")
+		return fmt.Errorf("[Forum-Poster] - Can't find lastclick")
 	}
 
 	log.WithFields(log.Fields{
@@ -149,7 +149,7 @@ func (c *Collector) PHPBB3Post(i PHPBB3InfoSite, p Payload, a string) error {
 		"Title":         title,
 		"SID":           c.Sid,
 		"URL":           url,
-	}).Debug("[Poster] - Extract Values")
+	}).Debug("[Forum-Poster] - Extract Values")
 
 	// Find the review items
 	doc.Find(".sidebar-reviews article .content-block").Each(func(i int, s *goquery.Selection) {
@@ -176,7 +176,7 @@ func (c *Collector) PHPBB3Post(i PHPBB3InfoSite, p Payload, a string) error {
 	err = writerLoad.Close()
 	if err != nil {
 		fmt.Println(err)
-		return fmt.Errorf("[Poster] Post - %v", err)
+		return fmt.Errorf("[Forum-Poster] Post - %v", err)
 	}
 
 	log.Debugln("Posting to FORUM ID", i.F)
@@ -200,7 +200,7 @@ func (c *Collector) PHPBB3Post(i PHPBB3InfoSite, p Payload, a string) error {
 	}
 
 	if !checkFinalURL(c.FinalURL) {
-		return fmt.Errorf("[Poster] NOT Posted - %s", c.FinalURL)
+		return fmt.Errorf("[Forum-Poster] NOT Posted - %s", c.FinalURL)
 	}
 
 	switch a {
