@@ -1,4 +1,4 @@
-module github.com/skinner12/forum-poster
+module github.com/skinner12/forumposter
 
 go 1.15
 
