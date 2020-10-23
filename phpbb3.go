@@ -49,7 +49,7 @@ func (c *Collector) PHPBB3(i PHPBB3InfoSite, p Payload) error {
 	_ = writer.WriteField("login", "Login")
 	err = writer.Close()
 	if err != nil {
-		fmt.Println(err)
+		log.Debugf("[Forum-Poster] Login - %v", err)
 		return fmt.Errorf("[Forum-Poster] Login - %v", err)
 	}
 
