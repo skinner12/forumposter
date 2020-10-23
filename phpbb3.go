@@ -76,7 +76,7 @@ func (c *Collector) PHPBB3Post(i PHPBB3InfoSite, p Payload, a string) error {
 
 	// Set post NEW or REPLY
 	switch a {
-	case "new":
+	case "post":
 		log.Infoln("* Post new thread to", i.URL)
 		url = fmt.Sprintf("%s/posting.php?mode=post&f=%s", i.URL, i.F)
 	case "reply":
