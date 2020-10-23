@@ -46,7 +46,7 @@ type Collector struct {
 	Cookie *cookiejar.Jar
 	//Client is the http client
 	Client *http.Client
-	//Sid is the sid extracted from cookie
+	//Sid is the SID extracted from cookie
 	Sid string
 	// Is the URL after the redirect
 	FinalURL string
