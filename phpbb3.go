@@ -76,7 +76,7 @@ func (c *Collector) PHPBB3Post(i PHPBB3InfoSite, p Payload, a string) error {
 
 	// Set post NEW or REPLY
 	switch a {
-	case "post":
+	case "new":
 		log.Infoln("* Post new thread to", i.URL)
 		url = fmt.Sprintf("%s/posting.php?mode=post&f=%s", i.URL, i.F)
 	case "reply":
@@ -204,7 +204,7 @@ func (c *Collector) PHPBB3Post(i PHPBB3InfoSite, p Payload, a string) error {
 	}
 
 	switch a {
-	case "post":
+	case "new":
 		log.Infof("The URL of new thread is: %v\n", c.FinalURL)
 	case "reply":
 		log.Infof("The URL of reply is: %v\n", c.FinalURL)
