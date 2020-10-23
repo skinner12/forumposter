@@ -1,4 +1,4 @@
-package poster
+package forumposter
 
 import (
 	"bytes"
