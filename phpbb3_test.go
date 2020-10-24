@@ -146,9 +146,11 @@ func TestCollector_PHPBB3Post(t *testing.T) {
 			}
 			NewCollector()
 			LogLevel("debug")
-			if err := c.PHPBB3Post(tt.args.i, tt.args.p, tt.args.a); (err != nil) != tt.wantErr {
+			var a string
+			if a, err = c.PHPBB3Post(tt.args.i, tt.args.p, tt.args.a); (err != nil) != tt.wantErr {
 				t.Errorf("Collector.PHPBB3 POST NEW() error = %d, wantErr %v", err, tt.wantErr)
 			}
+			log.Infoln("Posted on", a)
 		})
 	}
 }
