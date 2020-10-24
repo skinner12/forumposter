@@ -70,7 +70,7 @@ func (c *Collector) PHPBB3(i PHPBB3InfoSite, p Payload) error {
 
 //PHPBB3Post post new thread
 //a is for chose if reply or new thread
-func (c *Collector) PHPBB3Post(i PHPBB3InfoSite, p Payload, a string) error {
+func (c *Collector) PHPBB3Post(i PHPBB3InfoSite, p Payload, a string) (string, error) {
 
 	var url string
 
@@ -83,13 +83,13 @@ func (c *Collector) PHPBB3Post(i PHPBB3InfoSite, p Payload, a string) error {
 		log.Infoln("* Reply thread to", i.URL)
 		url = fmt.Sprintf("%s/posting.php?mode=reply&f=%s&t=%s", i.URL, i.F, i.T)
 	default:
-		return fmt.Errorf("[Forum-Poster] - Choice are: new or reply. Set the right one")
+		return "", fmt.Errorf("[Forum-Poster] - Choice are: new or reply. Set the right one")
 	}
 
 	// Login first
 	err := c.PHPBB3(i, p)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	log.Debugln("SID", c.Sid)
@@ -127,19 +127,19 @@ func (c *Collector) PHPBB3Post(i PHPBB3InfoSite, p Payload, a string) error {
 	token, ok := doc.Find("input[name='form_token']").Attr("value")
 	if !ok {
 
-		return fmt.Errorf("[Forum-Poster] - Can't find form_token")
+		return "", fmt.Errorf("[Forum-Poster] - Can't find form_token")
 	}
 
 	creationTime, ok := doc.Find("input[name='creation_time']").Attr("value")
 	if !ok {
 
-		return fmt.Errorf("[Forum-Poster] - Can't find creation_time")
+		return "", fmt.Errorf("[Forum-Poster] - Can't find creation_time")
 	}
 
 	lastclick, ok := doc.Find("input[name='lastclick']").Attr("value")
 	if !ok {
 
-		return fmt.Errorf("[Forum-Poster] - Can't find lastclick")
+		return "", fmt.Errorf("[Forum-Poster] - Can't find lastclick")
 	}
 
 	log.WithFields(log.Fields{
@@ -176,7 +176,7 @@ func (c *Collector) PHPBB3Post(i PHPBB3InfoSite, p Payload, a string) error {
 	err = writerLoad.Close()
 	if err != nil {
 		fmt.Println(err)
-		return fmt.Errorf("[Forum-Poster] Post - %v", err)
+		return "", fmt.Errorf("[Forum-Poster] Post - %v", err)
 	}
 
 	log.Debugln("Posting to FORUM ID", i.F)
@@ -200,7 +200,7 @@ func (c *Collector) PHPBB3Post(i PHPBB3InfoSite, p Payload, a string) error {
 	}
 
 	if !checkFinalURL(c.FinalURL) {
-		return fmt.Errorf("[Forum-Poster] NOT Posted - %s", c.FinalURL)
+		return "", fmt.Errorf("[Forum-Poster] NOT Posted - %s", c.FinalURL)
 	}
 
 	switch a {
@@ -210,7 +210,7 @@ func (c *Collector) PHPBB3Post(i PHPBB3InfoSite, p Payload, a string) error {
 		log.Infof("The URL of reply is: %v\n", c.FinalURL)
 	}
 
-	return nil
+	return c.FinalURL, nil
 }
 
 // checkFinalURL chek if finalURL contains f= (means that thread was created)
