@@ -3,7 +3,6 @@ package forumposter
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"mime/multipart"
 	"regexp"
 	"strings"
@@ -104,11 +103,11 @@ func (c *Collector) PHPBB3Post(i PHPBB3InfoSite, p Payload, a string) (string, e
 
 	body, err := c.fetch(readPostForm)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	// Load the HTML document
@@ -190,14 +189,10 @@ func (c *Collector) PHPBB3Post(i PHPBB3InfoSite, p Payload, a string) (string, e
 
 	resp, err := c.fetch(postThread)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	// write the whole body at once
-	err = ioutil.WriteFile("post.html", resp, 0644)
-	if err != nil {
-		panic(err)
-	}
+	log.Traceln("[Forum-Poster] Response:", resp)
 
 	if !checkFinalURL(c.FinalURL) {
 		return "", fmt.Errorf("[Forum-Poster] NOT Posted - %s", c.FinalURL)
