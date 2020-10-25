@@ -210,6 +210,6 @@ func (c *Collector) PHPBB3Post(i PHPBB3InfoSite, p Payload, a string) (string, e
 
 // checkFinalURL chek if finalURL contains f= (means that thread was created)
 func checkFinalURL(url string) bool {
-	match, _ := regexp.MatchString(`(?m)\/viewtopic\.php\?f=[0-9]*&t=([0-9]+)`, url)
+	match, _ := regexp.MatchString(`(?m)[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)`, url)
 	return match
 }
