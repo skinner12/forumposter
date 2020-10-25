@@ -239,6 +239,8 @@ func (c *Collector) fetch(r *Request) ([]byte, error) {
 		log.Debugln("Redirect to:", res.Header.Get("Location"))
 	}
 
+	log.Debugln("[Forum-Poster] - Satus Response", res.StatusCode)
+
 	if res.StatusCode != 200 {
 		log.WithFields(log.Fields{
 			"payload":    r.Body,
