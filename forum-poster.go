@@ -212,7 +212,7 @@ func (c *Collector) fetch(r *Request) ([]byte, error) {
 			"Method":  r.Method,
 			"Error":   err,
 		}).Error("[Forum-Poster] - Make Request")
-		//return nil, fmt.Errorf("[Forum-Poster] - Error in request: %s", err)
+		return nil, fmt.Errorf("[Forum-Poster] - Error in request: %s", err)
 	}
 	//req.Header.Add("Cookie", c.Cookie)
 
@@ -232,7 +232,7 @@ func (c *Collector) fetch(r *Request) ([]byte, error) {
 			"Method":  r.Method,
 			"Error":   err,
 		}).Error("[Forum-Poster] - Get Response")
-		//return nil, fmt.Errorf("[Forum-Poster] - Error in response: %s", err)
+		return nil, fmt.Errorf("[Forum-Poster] - Error in response: %s", err)
 	}
 
 	if res.StatusCode == 302 {
