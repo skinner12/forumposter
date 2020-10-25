@@ -100,7 +100,7 @@ func TestCollector_PHPBB3Post(t *testing.T) {
 					User:     user,
 					Password: password,
 					T:        "225626",
-					F:        "17",
+					F:        "2",
 				},
 				Payload{
 					Title: "asssssss",
@@ -110,7 +110,7 @@ func TestCollector_PHPBB3Post(t *testing.T) {
 					
 					[img]someimage[/img]`,
 				},
-				"reply",
+				"new",
 			},
 			false,
 		},
@@ -148,7 +148,7 @@ func TestCollector_PHPBB3Post(t *testing.T) {
 			LogLevel("debug")
 			var a string
 			if a, err = c.PHPBB3Post(tt.args.i, tt.args.p, tt.args.a); (err != nil) != tt.wantErr {
-				t.Errorf("Collector.PHPBB3 POST NEW() error = %d, wantErr %v", err, tt.wantErr)
+				t.Errorf("Collector.PHPBB3 POST NEW() error = %s, wantErr %v", err, tt.wantErr)
 			}
 			log.Infoln("Posted on", a)
 		})
