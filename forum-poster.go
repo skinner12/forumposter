@@ -48,6 +48,8 @@ type Collector struct {
 	Client *http.Client
 	//Sid is the SID extracted from cookie
 	Sid string
+	// SecurityToken is the token gets from login
+	SecurityToken string
 	// Is the URL after the redirect
 	FinalURL string
 }
@@ -221,6 +223,7 @@ func (c *Collector) fetch(r *Request) ([]byte, error) {
 	}
 
 	req.Header.Set("User-Agent", c.UserAgent)
+	req.Header.Set("Referer", r.URL)
 
 	res, err := c.Client.Do(req)
 
