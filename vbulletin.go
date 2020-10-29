@@ -220,10 +220,3 @@ func (c *Collector) VBulletinPost(i VBulletinInfoSite, p Payload, a string) (str
 
 	return c.FinalURL, nil
 }
-
-// checkFinalURL chek if finalURL contains f= (means that thread was created)
-/*func checkFinalURL(url string) bool {
-	match, _ := regexp.MatchString(`(?m)[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)`, url)
-	return match
-}
-*/
