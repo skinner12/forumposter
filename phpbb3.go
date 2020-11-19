@@ -18,11 +18,12 @@ type PHPBB3InfoSite struct {
 	Password string
 	F        string // Forum number
 	T        string // Thread Number
-
 }
 
 //PHPBB3 manage phpbb v3 forum
 func (c *Collector) PHPBB3(i PHPBB3InfoSite, p Payload) error {
+
+	var token, creationTime string
 
 	// Load home page to get SID from cookie
 	initialLoad := &Request{
@@ -32,12 +33,25 @@ func (c *Collector) PHPBB3(i PHPBB3InfoSite, p Payload) error {
 		Writer: nil,
 	}
 
-	_, err := c.fetch(initialLoad)
+	initialRequest, err := c.fetch(initialLoad)
 	if err != nil {
 		return err
 	}
 
 	log.Debugln("SID", c.Sid)
+
+	// Load the HTML document
+	log.Debugln("Extracting Value")
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(string(initialRequest)))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Extract for phpbb v. 3.3 (latest)
+	// * creation_time
+	// * form_token
+	token, _ = doc.Find("input[name='form_token']").Attr("value")
+	creationTime, _ = doc.Find("input[name='creation_time']").Attr("value")
 
 	// Make LOGIN
 	payload := &bytes.Buffer{}
@@ -46,6 +60,21 @@ func (c *Collector) PHPBB3(i PHPBB3InfoSite, p Payload) error {
 	_ = writer.WriteField("password", i.Password)
 	_ = writer.WriteField("sid", c.Sid)
 	_ = writer.WriteField("login", "Login")
+
+	// This is needed only for v. 3.3
+	if token != "" {
+		c.Version = 3
+		log.Debug("[Forum-Poster] Type - PHPBBv3.3 ")
+		log.WithFields(log.Fields{
+			"form_token":    token,
+			"creation_time": creationTime,
+			"SID":           c.Sid,
+			"URL":           i.URL,
+		}).Debug("[Forum-Poster] - Extract Values for login")
+		_ = writer.WriteField("form_token", token)
+		_ = writer.WriteField("creation_time", creationTime)
+		_ = writer.WriteField("redirect", "index.php")
+	}
 	err = writer.Close()
 	if err != nil {
 		log.Debugf("[Forum-Poster] Login - %v", err)
@@ -63,7 +92,6 @@ func (c *Collector) PHPBB3(i PHPBB3InfoSite, p Payload) error {
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -71,7 +99,7 @@ func (c *Collector) PHPBB3(i PHPBB3InfoSite, p Payload) error {
 //a is for chose if reply or new thread
 func (c *Collector) PHPBB3Post(i PHPBB3InfoSite, p Payload, a string) (string, error) {
 
-	var url string
+	var url, lastclick string
 
 	// Set post NEW or REPLY
 	switch a {
@@ -135,10 +163,12 @@ func (c *Collector) PHPBB3Post(i PHPBB3InfoSite, p Payload, a string) (string, e
 		return "", fmt.Errorf("[Forum-Poster] - Can't find creation_time")
 	}
 
-	lastclick, ok := doc.Find("input[name='lastclick']").Attr("value")
-	if !ok {
+	if c.Version != 3 {
+		lastclick, ok = doc.Find("input[name='lastclick']").Attr("value")
+		if !ok {
 
-		return "", fmt.Errorf("[Forum-Poster] - Can't find lastclick")
+			return "", fmt.Errorf("[Forum-Poster] - Can't find lastclick")
+		}
 	}
 
 	log.WithFields(log.Fields{
@@ -148,6 +178,7 @@ func (c *Collector) PHPBB3Post(i PHPBB3InfoSite, p Payload, a string) (string, e
 		"Title":         title,
 		"SID":           c.Sid,
 		"URL":           url,
+		"Version":       c.Version,
 	}).Debug("[Forum-Poster] - Extract Values")
 
 	// Find the review items
@@ -164,13 +195,17 @@ func (c *Collector) PHPBB3Post(i PHPBB3InfoSite, p Payload, a string) (string, e
 	_ = writerLoad.WriteField("form_token", token)
 	_ = writerLoad.WriteField("creation_time", creationTime)
 	_ = writerLoad.WriteField("sid", c.Sid)
-	_ = writerLoad.WriteField("lastclick", lastclick)
+
 	_ = writerLoad.WriteField("subject", p.Title)
 	_ = writerLoad.WriteField("message", p.Message)
 	_ = writerLoad.WriteField("post", "Submit")
 	_ = writerLoad.WriteField("attach_sig", "on")
 	_ = writerLoad.WriteField("topic_type", "0")
 	_ = writerLoad.WriteField("topic_time_limit", "0")
+
+	if c.Version != 3 {
+		_ = writerLoad.WriteField("lastclick", lastclick)
+	}
 
 	err = writerLoad.Close()
 	if err != nil {

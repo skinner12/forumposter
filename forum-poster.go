@@ -52,6 +52,8 @@ type Collector struct {
 	SecurityToken string
 	// Is the URL after the redirect
 	FinalURL string
+	// Version of PHPBB: 1-3
+	Version int
 }
 
 var (
