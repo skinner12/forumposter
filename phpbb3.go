@@ -227,7 +227,7 @@ func (c *Collector) PHPBB3Post(i PHPBB3InfoSite, p Payload, a string) (string, e
 		return "", err
 	}
 
-	log.Traceln("[Forum-Poster] Response:", resp)
+	log.Traceln("[Forum-Poster] Response:", string(resp))
 
 	if !checkFinalURL(c.FinalURL) {
 		return "", fmt.Errorf("[Forum-Poster] NOT Posted - %s", c.FinalURL)
