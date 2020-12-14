@@ -205,7 +205,7 @@ func (c *Collector) VBulletinPost(i VBulletinInfoSite, p Payload, a string) (str
 		return "", err
 	}
 
-	log.Traceln("[Forum-Poster]VBulletin - Response:", resp)
+	log.Traceln("[Forum-Poster]VBulletin - Response:", string(resp))
 
 	if !checkFinalURL(c.FinalURL) {
 		return "", fmt.Errorf("[Forum-Poster]VBulletin - NOT Posted - %s", c.FinalURL)
