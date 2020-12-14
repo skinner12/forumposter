@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"mime/multipart"
 	"regexp"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -63,6 +64,8 @@ func (c *Collector) VBulletin(i VBulletinInfoSite, p Payload) error {
 		Method: "POST",
 		Writer: writer,
 	}
+
+	time.Sleep(1 * time.Second)
 
 	resp, err := c.fetch(postLogin)
 	if err != nil {
@@ -162,6 +165,8 @@ func (c *Collector) VBulletinPost(i VBulletinInfoSite, p Payload, a string) (str
 		}
 
 	}
+
+	time.Sleep(1 * time.Second)
 
 	// Post New Thread
 	postload := &bytes.Buffer{}
