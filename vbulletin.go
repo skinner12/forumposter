@@ -92,11 +92,6 @@ func (c *Collector) getSecurityToken(resp string) error {
 		return fmt.Errorf("[Forum-Poster]VBulletin - Login Error, missing security token")
 	}
 
-	if string(a[1]) == "guest" {
-		log.Errorf("[Forum-Poster]VBulletin - Login Error, security token is GUEST")
-		return fmt.Errorf("[Forum-Poster]VBulletin - Login Error, security token is GUEST")
-	}
-
 	log.Debugln("[Forum-Poster]VBulletin - Login - Found SecurityToken", a[1])
 	log.Infoln("[Forum-Poster]VBulletin - Login made with success")
 	c.SecurityToken = string(a[1])
@@ -131,6 +126,11 @@ func (c *Collector) VBulletinPost(i VBulletinInfoSite, p Payload, a string) (str
 	}
 
 	log.Debugln("SECURITY TOKEN", c.SecurityToken)
+
+	if c.SecurityToken == "guest" {
+		log.Errorf("[Forum-Poster]VBulletin - Login Error, security token is GUEST")
+		return "", fmt.Errorf("[Forum-Poster]VBulletin - Login Error, security token is GUEST")
+	}
 
 	var re = regexp.MustCompile(`(?m)(\d+)-(.+)"`)
 
