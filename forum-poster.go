@@ -67,6 +67,9 @@ var (
 	// ErrForbiddenURL is the error thrown if visiting
 	// a URL which is not allowed by URLFilters
 	ErrForbiddenURL = errors.New("ForbiddenURL")
+	// ErrLoginFailed is the error when login to forum
+	// is done without success
+	ErrLoginFailed = errors.New("LoginFailed")
 
 	// ErrNoURLFiltersMatch is the error thrown if visiting
 	// a URL which is not allowed by URLFilters
@@ -90,6 +93,8 @@ var (
 // Init initializes the Collector's private variables and sets default
 // configuration for the Collector
 func (c *Collector) Init() {
+
+	log.Infoln("[ForumPoster] - Starting INIT")
 
 	c.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.362s"
 	c.Context = context.Background()
@@ -225,8 +230,9 @@ func (c *Collector) fetch(r *Request) ([]byte, error) {
 	}
 
 	req.Header.Set("User-Agent", c.UserAgent)
+	log.Tracef("User-Agent: %s", c.UserAgent)
 	req.Header.Set("Referer", r.URL)
-	log.Debugf("Referer: %s", req.Referer())
+	log.Tracef("Referer: %s", req.Referer())
 
 	res, err := c.Client.Do(req)
 
@@ -264,7 +270,7 @@ func (c *Collector) fetch(r *Request) ([]byte, error) {
 	// client tried to access.
 	c.FinalURL = res.Request.URL.String()
 
-	log.Debugf("The URL you ended up at is: %v\n", c.FinalURL)
+	log.Debugf("The URL you ended up at is: %v\n", res.Request.URL.String())
 
 	log.Debugln("Cookie from", r.URL, "are:", res.Cookies())
 
