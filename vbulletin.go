@@ -25,20 +25,23 @@ type VBulletinInfoSite struct {
 
 //VBulletin manage vbulletin forum
 func (c *Collector) VBulletin(i VBulletinInfoSite, p Payload) error {
-	// Load home page to get SID from cookie
-	initialLoad := &Request{
-		Body:   nil,
-		URL:    fmt.Sprintf("%s/", i.URL),
-		Method: "GET",
-		Writer: nil,
-	}
 
-	_, err := c.fetch(initialLoad)
-	if err != nil {
-		return err
-	}
+	/*
+		// Load home page to get SID from cookie
+		initialLoad := &Request{
+			Body:   nil,
+			URL:    fmt.Sprintf("%s/", i.URL),
+			Method: "GET",
+			Writer: nil,
+		}
 
-	time.Sleep(2 * time.Second)
+		_, err := c.fetch(initialLoad)
+		if err != nil {
+			return err
+		}
+
+		time.Sleep(2 * time.Second)
+	*/
 
 	hash := md5.Sum([]byte(i.Password))
 	hashPassword := hex.EncodeToString(hash[:])
@@ -56,7 +59,7 @@ func (c *Collector) VBulletin(i VBulletinInfoSite, p Payload) error {
 	_ = writer.WriteField("cookieuser", "1")
 	_ = writer.WriteField("do", "login")
 
-	err = writer.Close()
+	err := writer.Close()
 	if err != nil {
 		log.Debugf("[Forum-Poster] Login - %v", err)
 		return fmt.Errorf("[Forum-Poster] Login - %v", err)
@@ -68,8 +71,6 @@ func (c *Collector) VBulletin(i VBulletinInfoSite, p Payload) error {
 		Method: "POST",
 		Writer: writer,
 	}
-
-	time.Sleep(1 * time.Second)
 
 	resp, err := c.fetch(postLogin)
 	if err != nil {
@@ -136,7 +137,7 @@ func (c *Collector) VBulletinPost(i VBulletinInfoSite, p Payload, a string) (str
 
 	if c.SecurityToken == "guest" {
 		log.Errorf("[Forum-Poster]VBulletin - Login Error, security token is GUEST")
-		return "", fmt.Errorf("[Forum-Poster]VBulletin - Login Error, security token is GUEST")
+		return "", ErrLoginFailed
 	}
 
 	var re = regexp.MustCompile(`(?m)(\d+)-(.+)"`)
