@@ -26,23 +26,6 @@ type VBulletinInfoSite struct {
 //VBulletin manage vbulletin forum
 func (c *Collector) VBulletin(i VBulletinInfoSite, p Payload) error {
 
-	/*
-		// Load home page to get SID from cookie
-		initialLoad := &Request{
-			Body:   nil,
-			URL:    fmt.Sprintf("%s/", i.URL),
-			Method: "GET",
-			Writer: nil,
-		}
-
-		_, err := c.fetch(initialLoad)
-		if err != nil {
-			return err
-		}
-
-		time.Sleep(2 * time.Second)
-	*/
-
 	hash := md5.Sum([]byte(i.Password))
 	hashPassword := hex.EncodeToString(hash[:])
 
