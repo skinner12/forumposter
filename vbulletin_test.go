@@ -60,7 +60,7 @@ func TestCollector_VBulletinLogin(t *testing.T) {
 			fields{
 				"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36",
 				nil,
-				"trace",
+				"debug",
 				false,
 				jar,
 				client,
@@ -115,7 +115,8 @@ func TestCollector_VBulletinLogin(t *testing.T) {
 				Client:    tt.fields.Client,
 			}
 			NewCollector()
-			LogLevel("debug")
+
+			LogLevel(tt.fields.LogLevel)
 			if err := c.VBulletin(tt.args.i, tt.args.p); (err != nil) != tt.wantErr {
 				t.Errorf("Collector.VBulletin() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -173,7 +174,7 @@ func TestCollector_VBulletinPost(t *testing.T) {
 			fields{
 				"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36",
 				nil,
-				"debug",
+				"trace",
 				false,
 				jar,
 				client,

@@ -38,6 +38,8 @@ func (c *Collector) VBulletin(i VBulletinInfoSite, p Payload) error {
 		return err
 	}
 
+	time.Sleep(2 * time.Second)
+
 	hash := md5.Sum([]byte(i.Password))
 	hashPassword := hex.EncodeToString(hash[:])
 
@@ -46,8 +48,10 @@ func (c *Collector) VBulletin(i VBulletinInfoSite, p Payload) error {
 	writer := multipart.NewWriter(payload)
 	_ = writer.WriteField("vb_login_username", i.User)
 	_ = writer.WriteField("vb_login_password", i.Password)
+	_ = writer.WriteField("s", "")
+	_ = writer.WriteField("vb_login_password_hint", "Password")
 	_ = writer.WriteField("vb_login_md5password", hashPassword)
-	_ = writer.WriteField("vb_login_md5password_utf", "Login")
+	_ = writer.WriteField("vb_login_md5password_utf", hashPassword)
 	_ = writer.WriteField("securitytoken", "guest")
 	_ = writer.WriteField("cookieuser", "1")
 	_ = writer.WriteField("do", "login")
@@ -60,7 +64,7 @@ func (c *Collector) VBulletin(i VBulletinInfoSite, p Payload) error {
 
 	postLogin := &Request{
 		Body:   payload,
-		URL:    fmt.Sprintf("%s/login.php?do=login", i.URL),
+		URL:    fmt.Sprintf("%s/login.php", i.URL),
 		Method: "POST",
 		Writer: writer,
 	}

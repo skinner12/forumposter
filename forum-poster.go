@@ -226,6 +226,7 @@ func (c *Collector) fetch(r *Request) ([]byte, error) {
 
 	req.Header.Set("User-Agent", c.UserAgent)
 	req.Header.Set("Referer", r.URL)
+	log.Debugf("Referer: %s", req.Referer())
 
 	res, err := c.Client.Do(req)
 
