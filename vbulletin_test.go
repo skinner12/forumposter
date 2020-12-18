@@ -270,3 +270,96 @@ func TestCollector_VBulletinPost(t *testing.T) {
 		})
 	}
 }
+
+func TestCollector_VBulletinCheckVersion(t *testing.T) {
+
+	type fields struct {
+		UserAgent string
+		Context   context.Context
+		LogLevel  string
+		LogFile   bool
+		Cookie    *cookiejar.Jar
+		Client    *http.Client
+	}
+	type args struct {
+		url     string
+		version string
+	}
+
+	jar, err := cookiejar.New(nil)
+	if err != nil {
+		log.Fatalf("Failed to set cookie: %s", err)
+	}
+
+	client := &http.Client{
+		Jar: jar,
+	}
+
+	fields1 := fields{
+		"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36",
+		nil,
+		"debug",
+		false,
+		jar,
+		client,
+	}
+
+	tests := []struct {
+		name        string
+		URL         string
+		wantVersion int
+	}{
+		{
+			"1",
+			"https://forum.vbulletin.com/",
+			5,
+		},
+	}
+
+	// Root folder
+	cwd, err := os.Getwd()
+
+	if err != nil {
+		log.Fatalf("Failed to determine working directory: %s", err)
+	}
+
+	// Set as global variable
+	os.Setenv("root", cwd)
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &Collector{
+				UserAgent: fields1.UserAgent,
+				Context:   fields1.Context,
+				LogLevel:  fields1.LogLevel,
+				LogFile:   fields1.LogFile,
+				Cookie:    fields1.Cookie,
+				Client:    fields1.Client,
+			}
+			NewCollector()
+
+			LogLevel(fields1.LogLevel)
+
+			// Check version of VBulletin (3,4,5)
+			checkVersion := &Request{
+				URL:    fmt.Sprintf("%s/", tt.URL),
+				Method: "GET",
+			}
+
+			resp, err := c.fetch(checkVersion)
+			if err != nil {
+				t.Errorf("Collector.VBulletin() error = %v", err)
+				return
+			}
+
+			if err := c.getVersionForum(string(resp)); err != nil {
+				t.Errorf("Collector.VBulletin() error = %v", err)
+				return
+			}
+
+			if c.Version != tt.wantVersion {
+				t.Errorf("Collector.VBulletin() Want version %d but get %d", tt.wantVersion, c.Version)
+			}
+		})
+	}
+}

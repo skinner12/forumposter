@@ -20,6 +20,7 @@ type VBulletinInfoSite struct {
 	F             string // Forum number, for new post
 	T             string // Thread Number, for reply
 	SecurityToken string // Token after login
+	Version       int    // Version of VBulletin Forum (3,4,5)
 
 }
 
@@ -89,12 +90,56 @@ func (c *Collector) getSecurityToken(resp string) error {
 	return nil
 }
 
+func (c *Collector) getVersionForum(resp string) error {
+
+	// Set default version 3
+	c.Version = 3
+
+	var re4 = regexp.MustCompile(`(?mi)SIMPLEVERSION\s=\s"(\d+)"`)
+	a := re4.FindStringSubmatch(resp)
+
+	if a != nil {
+		log.Infoln("[Forum-Poster] VBulletin - Version 4 found")
+		c.Version = 4
+		return nil
+	}
+
+	var re5 = regexp.MustCompile(`(?mi)"simpleversion":\s"v=(\d+)"`)
+	b := re5.FindStringSubmatch(resp)
+
+	if b != nil {
+		log.Infoln("[Forum-Poster] VBulletin - Version 5 found")
+		c.Version = 5
+		return nil
+	}
+
+	log.Infoln("[Forum-Poster] VBulletin - Version 3 found")
+
+	return nil
+
+}
+
 //VBulletinPost post new thread
 //a is for chose if reply or new thread
 func (c *Collector) VBulletinPost(i VBulletinInfoSite, p Payload, a string) (string, error) {
 
 	var url string
 	var action string
+
+	// TODO: check if "simpleversion": "v=564" if present. V3 not have that
+
+	// Check version of VBulletin (3,4,5)
+	checkVersion := &Request{
+		URL:    fmt.Sprintf("%s/", i.URL),
+		Method: "GET",
+	}
+
+	resp, err := c.fetch(checkVersion)
+	if err != nil {
+		return "", err
+	}
+
+	log.Traceln("[Forum-Poster]VBulletin - Login response", string(resp))
 
 	// Set post NEW or REPLY
 	switch a {
@@ -111,7 +156,7 @@ func (c *Collector) VBulletinPost(i VBulletinInfoSite, p Payload, a string) (str
 	}
 
 	// Login first
-	err := c.VBulletin(i, p)
+	err = c.VBulletin(i, p)
 	if err != nil {
 		return "", err
 	}
@@ -198,7 +243,7 @@ func (c *Collector) VBulletinPost(i VBulletinInfoSite, p Payload, a string) (str
 		Writer: writerLoad,
 	}
 
-	resp, err := c.fetch(postThread)
+	resp, err = c.fetch(postThread)
 	if err != nil {
 		return "", err
 	}
