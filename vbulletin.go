@@ -33,15 +33,37 @@ func (c *Collector) VBulletin(i VBulletinInfoSite, p Payload) error {
 	// Make LOGIN
 	payload := &bytes.Buffer{}
 	writer := multipart.NewWriter(payload)
-	_ = writer.WriteField("vb_login_username", i.User)
-	_ = writer.WriteField("vb_login_password", i.Password)
+	/*
+			s	""
+		do	"login"
+		vb_login_md5password	"02eb2a6aab26405366779456c9ebfa86"
+		vb_login_md5password_utf	"02eb2a6aab26405366779456c9ebfa86"
+		vb_login_username	"skinner122"
+		vb_login_password	""
+	*/
+
+	log.Debugf("[Forum-Poster] - VBulletin Version %d", c.Version)
+
 	_ = writer.WriteField("s", "")
-	_ = writer.WriteField("vb_login_password_hint", "Password")
-	_ = writer.WriteField("vb_login_md5password", hashPassword)
-	_ = writer.WriteField("vb_login_md5password_utf", hashPassword)
-	_ = writer.WriteField("securitytoken", "guest")
-	_ = writer.WriteField("cookieuser", "1")
 	_ = writer.WriteField("do", "login")
+	_ = writer.WriteField("vb_login_md5password", hashPassword)
+
+	_ = writer.WriteField("vb_login_username", i.User)
+
+	if c.Version == 3 {
+		_ = writer.WriteField("vb_login_password", i.Password)
+		_ = writer.WriteField("vb_login_md5password_utf", "")
+		_ = writer.WriteField("cookieuser", "1")
+		_ = writer.WriteField("securitytoken", "guest")
+	}
+
+	if c.Version == 4 || c.Version == 5 {
+		_ = writer.WriteField("vb_login_password", i.Password)
+		_ = writer.WriteField("vb_login_md5password_utf", hashPassword)
+		_ = writer.WriteField("vb_login_password_hint", "Password")
+		_ = writer.WriteField("securitytoken", "guest")
+		_ = writer.WriteField("cookieuser", "1")
+	}
 
 	err := writer.Close()
 	if err != nil {
@@ -140,6 +162,12 @@ func (c *Collector) VBulletinPost(i VBulletinInfoSite, p Payload, a string) (str
 	}
 
 	log.Traceln("[Forum-Poster]VBulletin - Login response", string(resp))
+
+	err = c.getVersionForum(string(resp))
+
+	if err != nil {
+		return "", err
+	}
 
 	// Set post NEW or REPLY
 	switch a {

@@ -7,6 +7,7 @@ import (
 	"net/http/cookiejar"
 	"os"
 	"testing"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -117,6 +118,27 @@ func TestCollector_VBulletinLogin(t *testing.T) {
 			NewCollector()
 
 			LogLevel(tt.fields.LogLevel)
+
+			// Check version of VBulletin (3,4,5)
+			checkVersion := &Request{
+				URL:    fmt.Sprintf("%s/", url),
+				Method: "GET",
+			}
+
+			resp, err := c.fetch(checkVersion)
+			if err != nil {
+				t.Errorf("Collector.VBulletin() error = %v", err)
+			}
+
+			log.Traceln("[Forum-Poster]VBulletin - Login response", string(resp))
+
+			err = c.getVersionForum(string(resp))
+
+			if err != nil {
+				t.Errorf("Collector.VBulletin() error = %v", err)
+			}
+
+			time.Sleep(2 * time.Second)
 			if err := c.VBulletin(tt.args.i, tt.args.p); (err != nil) != tt.wantErr {
 				t.Errorf("Collector.VBulletin() error = %v, wantErr %v", err, tt.wantErr)
 			}
