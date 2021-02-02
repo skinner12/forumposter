@@ -71,7 +71,7 @@ func TestCollector_VBulletinLogin(t *testing.T) {
 					URL:      url,
 					User:     user,
 					Password: password,
-					T:        "5733561",
+					T:        "174447",
 					F:        "2",
 				},
 				Payload{
@@ -206,7 +206,7 @@ func TestCollector_VBulletinPost(t *testing.T) {
 					URL:      url,
 					User:     user,
 					Password: password,
-					T:        "5733561",
+					T:        "174855",
 					F:        "2",
 				},
 				Payload{
