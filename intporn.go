@@ -39,6 +39,8 @@ type intPornReponse struct {
 		AlertsUnread        string `json:"alerts_unread"`
 		TotalUnread         string `json:"total_unread"`
 	} `json:"visitor"`
+	Message  string `json:"message"`
+	Redirect string `json:"redirect"`
 }
 
 //IntPornLogin function to make login. Return Error
@@ -118,7 +120,9 @@ func (i *IntPornInfoSite) getCSRF(p string) error {
 	return nil
 }
 
-func (i *IntPornInfoSite) getValuePost(p string) error {
+// @p: page's code
+// @reply: new or reply
+func (i *IntPornInfoSite) getValuePost(p string, action string) error {
 
 	// Extract:
 	// attachment_hash
@@ -145,14 +149,16 @@ func (i *IntPornInfoSite) getValuePost(p string) error {
 		return fmt.Errorf("Can't find attachment_hash_combined")
 	}
 
-	i.LastDate, ok = doc.Find("input[name='last_date']").Attr("value")
-	if !ok {
-		return fmt.Errorf("Can't find last_date")
-	}
+	if action == "reply" {
+		i.LastDate, ok = doc.Find("input[name='last_date']").Attr("value")
+		if !ok {
+			return fmt.Errorf("Can't find last_date")
+		}
 
-	i.LastKnowDate, ok = doc.Find("input[name='last_known_date']").Attr("value")
-	if !ok {
-		return fmt.Errorf("Can't find last_known_date")
+		i.LastKnowDate, ok = doc.Find("input[name='last_known_date']").Attr("value")
+		if !ok {
+			return fmt.Errorf("Can't find last_known_date")
+		}
 	}
 
 	return nil
@@ -199,10 +205,10 @@ func (c *Collector) IntPorn(i IntPornInfoSite, p Payload, a string) (string, err
 
 	// Set post NEW or REPLY
 	switch a {
-	/*case "new":
-	log.Infoln("* Post new thread to", i.URL)
-	url = fmt.Sprintf("%s/newthread.php?do=newthread&f=%s", i.URL, i.F)
-	action = "postthread"*/
+	case "new":
+		log.Infoln("* Post new thread to", i.URL)
+		//https://www.intporn.org/forums/test/post-thread
+		url = fmt.Sprintf("%s/forums/%s/post-thread", i.URL, i.F)
 	case "reply":
 		log.Infoln("* Reply thread to", i.T)
 		url = fmt.Sprintf("%s/threads/%s", i.URL, i.T)
@@ -234,7 +240,7 @@ func (c *Collector) IntPorn(i IntPornInfoSite, p Payload, a string) (string, err
 	log.Traceln("[Forum-Poster]IntPorn - Real Thread Response", string(body))
 
 	// Extract value for post data
-	if err := i.getValuePost(string(body)); err != nil {
+	if err := i.getValuePost(string(body), a); err != nil {
 		return "", fmt.Errorf("[Forum-Poster]IntPorn Extract Data - %s", err)
 	}
 
@@ -249,12 +255,40 @@ func (c *Collector) IntPorn(i IntPornInfoSite, p Payload, a string) (string, err
 
 	// Make URL to Post
 	// Set post NEW or REPLY
+
+	// Post Reply Thread
+	postload := &bytes.Buffer{}
+	writerLoad := multipart.NewWriter(postload)
+
+	_ = writerLoad.WriteField("attachment_hash", i.AttachmentHash)
+	_ = writerLoad.WriteField("attachment_hash_combined", i.AttachmentHashCombined)
+
+	_ = writerLoad.WriteField("message_html", p.Message)
+
+	_ = writerLoad.WriteField("_xfToken", i.CSRF)
+
+	_ = writerLoad.WriteField("_xfWithData", "1")
+	_ = writerLoad.WriteField("_xfToken", i.CSRF)
+	_ = writerLoad.WriteField("_xfResponseType", "json")
+
 	switch a {
-	/*case "new":
-	log.Infoln("* Post new thread to", i.URL)
-	url = fmt.Sprintf("%s/newthread.php?do=newthread&f=%s", i.URL, i.F)
-	action = "postthread"*/
+	case "new":
+		_ = writerLoad.WriteField("title", p.Title)
+		_ = writerLoad.WriteField("tags", p.Tags)
+		_ = writerLoad.WriteField("watch_thread", "1")
+		_ = writerLoad.WriteField("watch_thread_email", "1")
+		_ = writerLoad.WriteField("_xfSet[watch_thread]", "1")
+		_ = writerLoad.WriteField("poll[question]", "")
+		_ = writerLoad.WriteField("poll[new_responses][]", "")
+		_ = writerLoad.WriteField("poll[max_votes_type]", "single")
+		_ = writerLoad.WriteField("poll[change_vote]", "1")
+		_ = writerLoad.WriteField("_xfRequestUri", fmt.Sprintf("/forums/%s/post-thread", i.F))
+
+		log.Infoln("* Post new thread to", i.URL)
 	case "reply":
+		_ = writerLoad.WriteField("_xfRequestUri", xfRequestURI) // /threads/testing.1874299/
+		_ = writerLoad.WriteField("last_date", i.LastDate)
+		_ = writerLoad.WriteField("last_known_date", i.LastKnowDate)
 		url = fmt.Sprintf("%sadd-reply", c.FinalURL)
 	default:
 		return "", fmt.Errorf("[Forum-Poster]IntPorn - Choice are: new or reply. Set the right one")
@@ -271,22 +305,6 @@ func (c *Collector) IntPorn(i IntPornInfoSite, p Payload, a string) (string, err
 		"CSRF":                     i.CSRF,
 		"xfRequestUri":             xfRequestURI,
 	}).Debug("[Forum-Poster]IntPorn - Extract Values")
-
-	// Post Reply Thread
-	postload := &bytes.Buffer{}
-	writerLoad := multipart.NewWriter(postload)
-	_ = writerLoad.WriteField("attachment_hash", i.AttachmentHash)
-	_ = writerLoad.WriteField("attachment_hash_combined", i.AttachmentHashCombined)
-	_ = writerLoad.WriteField("last_date", i.LastDate)
-	_ = writerLoad.WriteField("last_known_date", i.LastKnowDate)
-
-	_ = writerLoad.WriteField("message_html", p.Message)
-
-	_ = writerLoad.WriteField("_xfToken", i.CSRF)
-	_ = writerLoad.WriteField("_xfRequestUri", xfRequestURI) // /threads/testing.1874299/
-	_ = writerLoad.WriteField("_xfWithData", "1")
-	_ = writerLoad.WriteField("_xfToken", i.CSRF)
-	_ = writerLoad.WriteField("_xfResponseType", "json")
 
 	err = writerLoad.Close()
 	if err != nil {
@@ -320,6 +338,10 @@ func (c *Collector) IntPorn(i IntPornInfoSite, p Payload, a string) (string, err
 
 	if rp.Status != "ok" {
 		return "", fmt.Errorf("[Forum-Poster]IntPorn -  Not Posted")
+	}
+
+	if a == "new" {
+		return rp.Redirect, nil
 	}
 
 	// Get ID of post

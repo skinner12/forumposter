@@ -6,6 +6,7 @@ import (
 	"net/http/cookiejar"
 	"os"
 	"testing"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -54,9 +55,10 @@ func TestCollector_IntPorn(t *testing.T) {
 		fields  fields
 		args    args
 		wantErr bool
+		active  bool
 	}{
 		{
-			"login",
+			"reply",
 			fields{
 				"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36",
 				nil,
@@ -83,6 +85,39 @@ func TestCollector_IntPorn(t *testing.T) {
 				"reply",
 			},
 			false,
+			true,
+		},
+		{
+			"post new thread",
+			fields{
+				"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36",
+				nil,
+				"trace",
+				false,
+				jar,
+				client,
+			},
+			args{
+				IntPornInfoSite{
+					URL:      url,
+					User:     user,
+					Password: password,
+					T:        "1874299",
+					F:        "test",
+				},
+				Payload{
+					Title: "Balaclava",
+					Message: `
+					<h2>Hi</h2>
+					<p>Good to me</p>
+
+					`,
+					Tags: "Just,Hold,On",
+				},
+				"new",
+			},
+			false,
+			true,
 		},
 	}
 	for _, tt := range tests {
@@ -97,14 +132,16 @@ func TestCollector_IntPorn(t *testing.T) {
 			}
 			NewCollector()
 			LogLevel("debug")
-			var a string
-			a, err := c.IntPorn(tt.args.i, tt.args.p, tt.args.a)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Collector.IntPorn() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+			if tt.active {
+				a, err := c.IntPorn(tt.args.i, tt.args.p, tt.args.a)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("Collector.IntPorn() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
 
-			log.Infoln("Final Response:", a)
+				log.Infoln("Final Response:", a)
+				time.Sleep(30 * time.Second) // Sleep 30 seconds avoid blocks
+			}
 
 		})
 	}
