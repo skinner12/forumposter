@@ -190,7 +190,7 @@ func (c *Collector) IntPorn(i IntPornInfoSite, p Payload, a string) (string, err
 	// Check if login is still available
 	if err := i.checkLogin(string(hp)); err != nil {
 		log.Debugf("[Forum-Poster]IntPorn - Make new login")
-		url = fmt.Sprintf("%s/login/login?login=%s&password=%s&remember=1&_xfRedirect=https://www.intporn.org&_xfToken=%s", i.URL, i.User, i.Password, i.CSRF)
+		url = fmt.Sprintf("%s/login/login?login=%s&password=%s&remember=1&_xfRedirect=%s&_xfToken=%s", i.URL, i.User, i.Password, i.URL, i.CSRF)
 
 		if err := c.IntPornLogin(i, url); err != nil {
 			return "", fmt.Errorf("[Forum-Poster]IntPorn Login - %s", err)
@@ -327,6 +327,6 @@ func (c *Collector) IntPorn(i IntPornInfoSite, p Payload, a string) (string, err
 
 	id := re.FindString(rp.HTML.Content)
 
-	return fmt.Sprintf("https://www.intporn.org%s%s", xfRequestURI, id), nil
+	return fmt.Sprintf("%s%s%s", i.URL, xfRequestURI, id), nil
 
 }
