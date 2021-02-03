@@ -23,6 +23,7 @@ import (
 type Payload struct {
 	Title   string
 	Message string
+	Tags    string
 }
 
 // A CollectorOption sets an option on a Collector.
